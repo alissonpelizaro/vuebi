@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: laravel-backend
+    container_name: laravel-backend
+    depends_on:
+      - mysql
+    ports:
+      - "8200:80"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/config:/app/config
+      - ./backend/database:/app/database
+      - ./backend/public:/app/public
+      - ./backend/resources:/app/resources
+      - ./backend/routes:/app/routes
+      - ./backend/storage:/app/storage
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/public
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    image: vue-frontend
+    container_name: vue-frontend
+    ports:
+      - "8100:8080"
+    volumes:
+      - ./ui/public:/app/public
+      - ./ui/src:/app/src
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: vuebi_database
+      MYSQL_USER: db_user
+      MYSQL_PASSWORD: db_pass
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mysql
+    ports:
+      - "8090:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root_pass
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
