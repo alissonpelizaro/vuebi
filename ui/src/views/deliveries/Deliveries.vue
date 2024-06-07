@@ -165,7 +165,7 @@
                   :label="link.label"
                   :active="link.active"
                   :disabled="!link.url"
-                  @click.native="fetchPage(link.url)"
+                  v-on:click="fetchPage(link.url)"
                 />
               </MaterialPagination>
             </div>

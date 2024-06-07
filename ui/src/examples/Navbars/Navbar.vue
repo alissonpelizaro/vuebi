@@ -23,7 +23,6 @@
   </nav>
 </template>
 <script>
-import MaterialInput from "@/components/MaterialInput.vue";
 import Breadcrumbs from "../Breadcrumbs.vue";
 import { mapMutations, mapState } from "vuex";
 
@@ -47,7 +46,6 @@ export default {
   },
   components: {
     Breadcrumbs,
-    MaterialInput,
   },
   computed: {
     ...mapState(["isAbsolute"]),

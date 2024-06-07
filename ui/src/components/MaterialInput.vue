@@ -70,16 +70,16 @@ export default {
       default: "dark"
     },
     min: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ''
     },
     max: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ''
     },
     step: {
-      type: Number,
-      default: 0
+      type: String,
+      default: ''
     },
   },
 
