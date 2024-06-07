@@ -22,7 +22,15 @@ make prepare-database
 2. Caso seu SO não seja compatível com comandos `make`, execute:
 ```sh
 docker compose up -d mysql
+
+cp backend/.env.example backend/.env
+
+cp ui/.env.example ui/.env
+
+composer install --working-dir=backend
+
 DB_HOST=127.0.0.1 php backend/artisan migrate
+
 DB_HOST=127.0.0.1 php backend/artisan db:seed --class=DeliveriesSeeder
 ```
 
@@ -65,9 +73,8 @@ A aplicação depende o Banco de dados MySql, devido à facilidade de algumas fu
 ## Testes
 A backend está com cobertura de testes de integração. Siga esses passos se quiser executar o testes localmente:
 
-1. Acesse a pasta `backend`;
-2. Instale as dependencias com `composer install`;
-3. Execute o Artisan Test com o comando:
+1. Instale as dependencias com `composer install --working-dir=backend` caso ainda não tenha feito;
+2. Execute o Artisan Test com o comando:
 ```sh
-php artisan test
+php backend/artisan test
 ```

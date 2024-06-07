@@ -1,5 +1,6 @@
 INJECT_HOST = DB_HOST=127.0.0.1
 BACKEND_FOLDER = backend
+FRONTENT_FOLDER = ui
 BACKEND_SEEDER = DeliveriesSeeder
 
 help: ## Show this help message
@@ -17,10 +18,15 @@ down: ## Stops and removes all containers
 
 prepare-database: ## Perform the database migration
 	cp ${BACKEND_FOLDER}/.env.example ${BACKEND_FOLDER}/.env
+	cp ${FRONTENT_FOLDER}/.env.example ${FRONTENT_FOLDER}/.env
 	docker compose up -d mysql
-	sleep 20
+	composer install --working-dir=backend
+	sleep 10
 	${INJECT_HOST} php ${BACKEND_FOLDER}/artisan migrate
 	${INJECT_HOST} php ${BACKEND_FOLDER}/artisan db:seed --class=${BACKEND_SEEDER}
+
+test:
+	php backend/artisan test
 
 more-seed: ## Seed more data in Database
 	${INJECT_HOST} php ${BACKEND_FOLDER}/artisan db:seed --class=${BACKEND_SEEDER}
