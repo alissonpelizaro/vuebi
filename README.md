@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-É uma aplicação em VueJs e Laravel de um BI de dados de uma transportadora, trazendo visualização gerenciais das entregas em formato de gráfico e lista.
+É uma aplicação em VueJs e Laravel de um BI de dados de uma transportadora, trazendo visualizações gerenciais das entregas em formato de gráfico e lista.
 
 ## Requerimentos
 * Python ^8.3
@@ -46,7 +46,7 @@ make up
 docker compose up
 ```
 
-3. Ao subir o conteiner, aguarde alguns instante até que o servidor do Vue esteja disponivel.
+3. Ao subir o conteiner, aguarde alguns instante até que o servidor do Vue esteja pronto.
 A UI estará disponivel em [http://localhost:8100/](http://localhost:8100/)
 
 Caso queira inserir mais dados no banco de dados, execute:
@@ -58,7 +58,7 @@ ou:
 DB_HOST=127.0.0.1 php backend/artisan db:seed --class=DeliveriesSeeder
 ```
 
-Caso queira ver todos os comandos `make` disponíveis, exeute:
+Caso queira ver todos os comandos `make` disponíveis, execute:
 ```sh
 make help
 ```
