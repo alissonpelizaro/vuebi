@@ -3,7 +3,7 @@
     <div class="row mb-4">
       <div class="col-lg-12 position-relative z-index-2">
         <div class="row">
-          <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="col-lg-3 col-md-6 col-sm-6 mt-lg-0 mt-4">
             <mini-statistics-card
               :title="{ text: 'Today\'s Money', value: '$53k' }"
               detail="<span class='text-success text-sm font-weight-bolder'>+55%</span> than last week"
@@ -47,8 +47,6 @@
               }"
             />
           </div>
-        </div>
-        <div class="row mt-4">
           <div class="col-lg-4 col-md-6 mt-4">
             <chart-holder-card
               title="Website Views"

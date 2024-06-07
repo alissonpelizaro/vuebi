@@ -48,8 +48,8 @@
             />
           </div>
         </div>
-        <div class="row mt-4">
-          <div class="col-lg-4 col-md-6 mt-4">
+        <div class="row mt-5">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Orders last week"
               subtitle="Viewing incoming delivery orders from prefious week"
@@ -67,7 +67,7 @@
               />
             </chart-holder-card>
           </div>
-          <div class="col-lg-4 col-md-6 mt-4">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Customer increase"
               subtitle="Vieweing customers increase from the last 5 month"
@@ -86,7 +86,7 @@
               />
             </chart-holder-card>
           </div>
-          <div class="col-lg-4 mt-4">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Shipping average days"
               subtitle="Vieweing delivery average days from the last 5 months"
@@ -105,9 +105,7 @@
               />
             </chart-holder-card>
           </div>
-        </div>
-        <div class="row mt-4">
-          <div class="col-lg-4 mt-4">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Top 5 Delivery Cities"
               subtitle="Vieweing of the top 5 Ciies that have most deliveries ever."
@@ -126,7 +124,7 @@
               />
             </chart-holder-card>
           </div>
-          <div class="col-lg-4 col-md-6 mt-4">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Revenue by Month"
               subtitle="Viewing revenue amount from the last 5 month"
@@ -145,7 +143,7 @@
               />
             </chart-holder-card>
           </div>
-          <div class="col-lg-4 col-md-6 mt-4">
+          <div class="col-lg-4 col-md-6 col-sm-6 mt-2 mb-6">
             <chart-holder-card
               title="Average Cost per Delivery"
               subtitle="Vieweing average delivery cost in the last 5 month"

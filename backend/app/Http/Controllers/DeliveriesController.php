@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DB;
 use App\Models\Deliveries;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -114,22 +115,23 @@ class DeliveriesController extends Controller
     {
         $startOfLastWeek = Carbon::now()->subWeek()->startOfWeek(Carbon::SUNDAY);
         $endOfLastWeek = Carbon::now()->subWeek()->endOfWeek(Carbon::SATURDAY);
-
-        $deliveriesByDay = Deliveries::whereBetween(
-            'dispatch_date', 
-            [$startOfLastWeek, $endOfLastWeek]
-        )
-            ->selectRaw('DAYOFWEEK(dispatch_date) as day, COUNT(*) as total')
-            ->groupBy('day')
-            ->pluck('total', 'day')
-            ->toArray();
-
-        $weeklyDeliveries = array_fill(0, 7, 0);
-
-        foreach ($deliveriesByDay as $day => $total) {
-            $weeklyDeliveries[$day - 1] = $total;
+    
+        $deliveries = Deliveries::whereBetween('dispatch_date', [$startOfLastWeek, $endOfLastWeek])
+            ->get()
+            ->groupBy(function($date) {
+                return Carbon::parse($date->dispatch_date)->format('w'); // Agrupar por dia da semana (0-6, onde 0 é domingo)
+            });
+    
+        $deliveriesByDay = [];
+        foreach ($deliveries as $day => $group) {
+            $deliveriesByDay[$day] = $group->count();
         }
-
+    
+        $weeklyDeliveries = array_fill(0, 7, 0);
+        foreach ($deliveriesByDay as $day => $total) {
+            $weeklyDeliveries[$day] = $total;
+        }
+    
         return response()->json($weeklyDeliveries);
     }
 
@@ -137,20 +139,24 @@ class DeliveriesController extends Controller
     {
         $now = Carbon::now();
         $startOfFiveMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
-        
-        $customersByMonth = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
-            ->selectRaw('YEAR(dispatch_date) as year, MONTH(dispatch_date) as month, DATE_FORMAT(dispatch_date, "%b") as month_name, COUNT(DISTINCT customer_id) as total')
-            ->groupBy('year', 'month', 'month_name')
-            ->orderBy('year')
-            ->orderBy('month')
+    
+        $deliveries = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
             ->get()
-            ->pluck('total', 'month_name')
-            ->toArray();
+            ->groupBy(function($date) {
+                return Carbon::parse($date->dispatch_date)->format('Y-m'); // Agrupar por ano e mês
+            });
+    
+        $customersByMonth = [];
+        foreach ($deliveries as $key => $value) {
+            $yearMonth = explode('-', $key);
+            $monthName = Carbon::createFromDate($yearMonth[0], $yearMonth[1], 1)->format('M');
+            $customersByMonth[$monthName] = $value->unique('customer_id')->count();
+        }
     
         // Inicializar arrays para rótulos e valores
         $labels = [];
         $values = [];
-
+    
         for ($i = 5; $i >= 0; $i--) {
             $month = $now->copy()->subMonths($i)->format('M');
             $labels[] = $month;
@@ -167,61 +173,77 @@ class DeliveriesController extends Controller
     {
         $now = Carbon::now();
         $startOfFiveMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
-        
-        $averageDeliveryTimeByMonth = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
+    
+        $deliveries = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
             ->where('status', 'Delivered')
-            ->selectRaw('YEAR(dispatch_date) as year, MONTH(dispatch_date) as month, DATE_FORMAT(dispatch_date, "%b") as month_name, AVG(DATEDIFF(estimated_delivery_date, dispatch_date)) as average_days')
-            ->groupBy('year', 'month', 'month_name')
-            ->orderBy('year')
-            ->orderBy('month')
             ->get()
-            ->pluck('average_days', 'month_name')
-            ->toArray();
+            ->groupBy(function($date) {
+                return Carbon::parse($date->dispatch_date)->format('Y-m'); // Agrupar por ano e mês
+            });
+        // return $deliveries;
 
+        $averageDeliveryTimeByMonth = [];
+        foreach ($deliveries as $key => $value) {
+            $yearMonth = explode('-', $key);
+            $monthName = Carbon::createFromDate($yearMonth[0], $yearMonth[1], 1)->format('M');
+            $totalDays = $value->sum(function($delivery) {
+                return Carbon::parse($delivery->estimated_delivery_date)->diffInDays(Carbon::parse($delivery->dispatch_date));
+            });
+            $averageDays = $totalDays / $value->count();
+            $averageDeliveryTimeByMonth[$monthName] = $averageDays;
+        }
+    
         // Inicializar arrays para rótulos e valores
         $labels = [];
         $values = [];
-
+    
         for ($i = 5; $i >= 0; $i--) {
             $month = $now->copy()->subMonths($i)->format('M');
             $labels[] = $month;
-            $values[] = round($averageDeliveryTimeByMonth[$month] ?? 0);
+            $values[] = abs(round($averageDeliveryTimeByMonth[$month] ?? 0));
         }
-
+    
         return response()->json([
             'labels' => $labels,
             'values' => $values,
         ]);
-    }
+    }    
 
     public function getChartRevenueByMonth()
     {
         $now = Carbon::now();
         $startOfFiveMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
-
-        $revenueByMonth = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
-            ->selectRaw('YEAR(dispatch_date) as year, MONTH(dispatch_date) as month, DATE_FORMAT(dispatch_date, "%b") as month_name, SUM(cost) as total_revenue')
-            ->groupBy('year', 'month', 'month_name')
-            ->orderBy('year')
-            ->orderBy('month')
+    
+        $deliveries = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
             ->get()
-            ->pluck('total_revenue', 'month_name')
-            ->toArray();
-
+            ->groupBy(function($date) {
+                return Carbon::parse($date->dispatch_date)->format('Y-m'); // Agrupar por ano e mês
+            });
+    
+        $revenueByMonth = [];
+        foreach ($deliveries as $key => $value) {
+            $yearMonth = explode('-', $key);
+            $monthName = Carbon::createFromDate($yearMonth[0], $yearMonth[1], 1)->format('M');
+            $totalRevenue = $value->sum('cost');
+            $revenueByMonth[$monthName] = $totalRevenue;
+        }
+    
+        // Inicializar arrays para rótulos e valores
         $labels = [];
         $values = [];
-
+    
         for ($i = 5; $i >= 0; $i--) {
             $month = $now->copy()->subMonths($i)->format('M');
             $labels[] = $month;
             $values[] = $revenueByMonth[$month] ?? 0;
         }
-
+    
         return response()->json([
             'labels' => $labels,
             'values' => $values,
         ]);
     }
+    
 
     public function getChartTop5Cities()
     {
@@ -246,29 +268,37 @@ class DeliveriesController extends Controller
     {
         $now = Carbon::now();
         $startOfFiveMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
-
-        $averageCostByMonth = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
-            ->selectRaw('YEAR(dispatch_date) as year, MONTH(dispatch_date) as month, DATE_FORMAT(dispatch_date, "%b") as month_name, AVG(cost) as average_cost')
-            ->groupBy('year', 'month', 'month_name')
-            ->orderBy('year')
-            ->orderBy('month')
+    
+        $deliveries = Deliveries::where('dispatch_date', '>=', $startOfFiveMonthsAgo)
             ->get()
-            ->pluck('average_cost', 'month_name')
-            ->toArray();
-
+            ->groupBy(function($date) {
+                return Carbon::parse($date->dispatch_date)->format('Y-m'); // Agrupar por ano e mês
+            });
+    
+        $averageCostByMonth = [];
+        foreach ($deliveries as $key => $value) {
+            $yearMonth = explode('-', $key);
+            $monthName = Carbon::createFromDate($yearMonth[0], $yearMonth[1], 1)->format('M');
+            $totalCost = $value->sum('cost');
+            $averageCost = $value->count() > 0 ? $totalCost / $value->count() : 0;
+            $averageCostByMonth[$monthName] = round($averageCost, 2);
+        }
+    
+        // Inicializar arrays para rótulos e valores
         $labels = [];
         $values = [];
-
+    
         for ($i = 5; $i >= 0; $i--) {
             $month = $now->copy()->subMonths($i)->format('M');
             $labels[] = $month;
-            $values[] = round($averageCostByMonth[$month] ?? 0, 2);
+            $values[] = $averageCostByMonth[$month] ?? 0;
         }
-
+    
         return response()->json([
             'labels' => $labels,
             'values' => $values,
         ]);
     }
+    
     
 }
