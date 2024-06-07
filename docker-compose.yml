@@ -32,6 +32,7 @@ services:
     container_name: vue-frontend
     ports:
       - "8100:8080"
+      - "8080:8080"
     volumes:
       - ./ui/public:/app/public
       - ./ui/src:/app/src
