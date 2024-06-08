@@ -21,7 +21,7 @@ prepare-database: ## Perform the database migration
 	cp ${FRONTENT_FOLDER}/.env.example ${FRONTENT_FOLDER}/.env
 	docker compose up -d mysql
 	composer install --working-dir=backend
-	sleep 10
+	sleep 15
 	${INJECT_HOST} php ${BACKEND_FOLDER}/artisan migrate
 	${INJECT_HOST} php ${BACKEND_FOLDER}/artisan db:seed --class=${BACKEND_SEEDER}
 
