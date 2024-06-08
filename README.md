@@ -74,7 +74,12 @@ A aplicação depende o Banco de dados MySql, devido à facilidade de algumas fu
 A backend está com cobertura de testes de integração. Siga esses passos se quiser executar o testes localmente:
 
 1. Instale as dependencias com `composer install --working-dir=backend` caso ainda não tenha feito;
-2. Execute o Artisan Test com o comando:
+2. Acesse a pasta `backend`
+3. Execute as migrações para o ambiente de teste:
 ```sh
-php backend/artisan test
+php artisan migrate --env=testing
+```
+4. Execute o Artisan Test com o comando:
+```sh
+php artisan test
 ```
